@@ -53,6 +53,14 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
             });
         },
 
+        _load: function (next) {
+            Y.later(2000, this, function () {
+                next(this);
+            })
+
+            //TODO load rootlocation and media location with their content
+        },
+
         /**
          * Returns a navigation item object. See the *NavigatinItems attribute.
          *
@@ -105,7 +113,7 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
          * @param {String} locationId
          * @return {Object}
          */
-        _getSubtreeItem: function (title, identifier, locationId) {
+        _getSubtreeItem: function (title, identifier, locationId, languageCode) {
             return this._getItem(
                 Y.eZ.NavigationItemSubtreeView, {
                     title: title,
@@ -113,7 +121,8 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                     route: {
                         name: 'viewLocation',
                         params: {
-                            id: locationId
+                            id: locationId,
+                            languageCode: languageCode
                         }
                     }
                 }
@@ -248,12 +257,14 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                         this._getSubtreeItem(
                             "Content structure",
                             "content-structure",
-                            "/api/ezp/v2/content/locations/1/2"
+                            "/api/ezp/v2/content/locations/1/2",
+                            "eng-gb"
                         ),
                         this._getSubtreeItem(
                             "Media library",
                             "media-library",
-                            "/api/ezp/v2/content/locations/1/43"
+                            "/api/ezp/v2/content/locations/1/43",
+                            "eng-gb"
                         ),
                     ];
                 },
