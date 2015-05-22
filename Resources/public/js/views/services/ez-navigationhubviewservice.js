@@ -54,11 +54,90 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
         },
 
         _load: function (next) {
-            Y.later(2000, this, function () {
-                next(this);
-            })
 
             //TODO load rootlocation and media location with their content
+            var api = this.get('capi'),
+                service = this;
+
+            api.getContentService().loadRoot(function (error, response) {
+                var rootLocationId, rootMediaFolderId;
+
+                if ( error ) {
+                    service._error("Failed to contact the REST API");
+                    return;
+                }
+
+                rootLocationId = response.document.Root.rootLocation._href;
+                service._loadLocationAndContent(rootLocationId, function (error, result){
+                    console.log(result.location.get('id'));
+                    console.log(result.content.get('mainLanguageCode'));
+                });
+
+
+                rootMediaFolderId = response.document.Root.rootMediaFolder._href;
+                service._loadLocationAndContent(rootMediaFolderId, function (error, result){
+                    console.log(result.location.get('id'));
+                    console.log(result.content.get('mainLanguageCode'));
+                });
+
+            });
+
+            //Y.later(2000, this, function () {
+
+
+
+                next(this);
+            //});
+
+
+        },
+
+        /**
+         * Loads the parent location and its content
+         *
+         * //TODO update comment
+         *
+         * @protected
+         * @method _loadParent
+         * @param {Y.eZ.Location} location
+         * @param {Function} callback the function to call when the location and
+         *        the content are loaded
+         * @param {Boolean} callback.error the error, truthy if an error occured
+         * @param {Object} callback.result an object containing the
+         *        Y.eZ.Location and the Y.eZ.Content instances under the `location` and
+         *        the `content` keys.
+         */
+        _loadLocationAndContent: function (locationId, callback) {
+            var loadOptions = {
+                    api: this.get('capi')
+                },
+                location, content;
+
+            location = new Y.eZ.Location({
+                'id': locationId
+            });
+            location.load(loadOptions, function (error) {
+                if ( error ) {
+                    callback(error);
+                    return;
+                }
+
+                content = new Y.eZ.Content({
+                    'id': location.get('resources').Content
+                });
+
+                content.load(loadOptions, function (error) {
+                    if ( error ) {
+                        callback(error);
+                        return;
+                    }
+
+                    callback(error, {
+                        location: location,
+                        content: content
+                    });
+                });
+            });
         },
 
         /**
