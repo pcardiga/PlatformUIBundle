@@ -3,7 +3,8 @@
  * For full copyright and license information view LICENSE file distributed with this source code.
  */
 YUI.add('ez-locationmodel-tests', function (Y) {
-    var modelTest;
+    var modelTest, trashTest,
+        /*Assert = Y.Assert,*/ Mock = Y.Mock;
 
     modelTest = new Y.Test.Case(Y.merge(Y.eZ.Test.ModelTests, {
         name: "eZ Location Model tests",
@@ -56,7 +57,39 @@ YUI.add('ez-locationmodel-tests', function (Y) {
 
     }));
 
+    trashTest = new Y.Test.Case({
+        name: "eZ Location Model trash tests",
+
+        setUp: function () {
+            this.model = new Y.eZ.Location();
+        },
+
+        tearDown: function () {
+            this.model.destroy();
+            delete this.model;
+        },
+
+        "Should load the root of the REST API": function () {
+            var capiMock = new Mock(),
+                contentServiceMock = new Mock(),
+                callback;
+
+            Mock.expect(capiMock, {
+                method: 'getContentService',
+                returns: contentServiceMock,
+            });
+
+            Mock.expect(contentServiceMock, {
+                method: 'loadRoot',
+                args: [Mock.Value.Function],
+            });
+
+            this.model.trash({api: capiMock}, callback);
+        },
+    });
+
     Y.Test.Runner.setName("eZ Location Model tests");
     Y.Test.Runner.add(modelTest);
+    Y.Test.Runner.add(trashTest);
 
 }, '', {requires: ['test', 'model-tests', 'ez-locationmodel', 'ez-restmodel']});

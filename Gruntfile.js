@@ -43,7 +43,7 @@ module.exports = function(grunt) {
         ];
 
     environment.TZ = 'Europe/Paris';
-    environment.LC_TIME = 'en_US';
+    environment.LC_TIME = 'en_US.UTF-8';
 
     grunt.initConfig({
         jshint: {
