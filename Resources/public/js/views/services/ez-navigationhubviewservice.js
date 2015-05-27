@@ -360,12 +360,8 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                         this._getSubtreeItem(
                             "Content structure",
                             "content-structure",
-
-                            "/api/ezp/v2/content/locations/1/43",
-                            "eng-gb"
-
-                            //this._rootStruct.location.get('id')//,
-                            //this._rootStruct.content.get('mainLanguageCode')
+                            this._rootStruct.location.get('id'),
+                            this._rootStruct.content.get('mainLanguageCode')
                         ),
                         this._getSubtreeItem(
                             "Media library",
