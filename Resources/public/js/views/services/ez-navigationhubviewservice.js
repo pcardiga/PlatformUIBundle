@@ -23,6 +23,24 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
         initializer: function () {
             this.on('*:logOut', this._logOut);
             this.after('*:navigateTo', this._navigateTo);
+
+            /**
+             * Stores the root struct (location and content)
+             *
+             * @property _rootStruct
+             * @type {Object|Null}  //TODO
+             * @protected
+             */
+            this._rootStruct = null;
+
+            /**
+             * Stores the root media struct (location and content)
+             *
+             * @property _rootMediaStruct
+             * @type {Object|Null} //TODO
+             * @protected
+             */
+            this._rootMediaStruct = null;
         },
 
         /**
@@ -54,42 +72,47 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
         },
 
         _load: function (next) {
-
-            //TODO load rootlocation and media location with their content
             var api = this.get('capi'),
                 service = this;
 
             api.getContentService().loadRoot(function (error, response) {
-                var rootLocationId, rootMediaFolderId;
+                var rootLocationId,
+                    rootMediaFolderId,
+                    tasks = new Y.Parallel(),
+                    endLoadRoot,
+                    endLoadRootMediaFolder;
 
                 if ( error ) {
                     service._error("Failed to contact the REST API");
                     return;
                 }
 
+                endLoadRoot = tasks.add();
+
                 rootLocationId = response.document.Root.rootLocation._href;
                 service._loadLocationAndContent(rootLocationId, function (error, result){
+                    //FIXME
                     console.log(result.location.get('id'));
                     console.log(result.content.get('mainLanguageCode'));
+                    service._rootStruct = result;
+                    endLoadRoot();
                 });
 
-
+                endLoadRootMediaFolder = tasks.add();
                 rootMediaFolderId = response.document.Root.rootMediaFolder._href;
                 service._loadLocationAndContent(rootMediaFolderId, function (error, result){
+                    //FIXME
                     console.log(result.location.get('id'));
                     console.log(result.content.get('mainLanguageCode'));
+                    service._rootMediaStruct = result;
+                    endLoadRootMediaFolder();
+
                 });
 
+                tasks.done(function () {
+                    next(service);
+                });
             });
-
-            //Y.later(2000, this, function () {
-
-
-
-                next(this);
-            //});
-
-
         },
 
         /**
@@ -314,6 +337,7 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
         },
     }, {
         ATTRS: {
+
             /**
              * Stores the navigation item objects for the 'platform' zone. Each
              * object must contain a `Constructor` property referencing
@@ -336,8 +360,12 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                         this._getSubtreeItem(
                             "Content structure",
                             "content-structure",
-                            "/api/ezp/v2/content/locations/1/2",
+
+                            "/api/ezp/v2/content/locations/1/43",
                             "eng-gb"
+
+                            //this._rootStruct.location.get('id')//,
+                            //this._rootStruct.content.get('mainLanguageCode')
                         ),
                         this._getSubtreeItem(
                             "Media library",
