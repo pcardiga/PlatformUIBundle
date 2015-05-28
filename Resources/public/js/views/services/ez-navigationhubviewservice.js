@@ -25,19 +25,19 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
             this.after('*:navigateTo', this._navigateTo);
 
             /**
-             * Stores the root struct (location and content)
+             * Stores the root struct with it's `location` and `content`
              *
              * @property _rootStruct
-             * @type {Object|Null}  //TODO
+             * @type {Object}
              * @protected
              */
             this._rootStruct = null;
 
             /**
-             * Stores the root media struct (location and content)
+             * Stores the root media struct with it's `location` and `content`
              *
              * @property _rootMediaStruct
-             * @type {Object|Null} //TODO
+             * @type {Object}
              * @protected
              */
             this._rootMediaStruct = null;
@@ -73,59 +73,56 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
 
         _load: function (next) {
             var api = this.get('capi'),
+                loadError = false,
                 service = this;
 
             api.getContentService().loadRoot(function (error, response) {
                 var rootLocationId,
                     rootMediaFolderId,
-                    tasks = new Y.Parallel(),
-                    endLoadRoot,
-                    endLoadRootMediaFolder;
+                    tasks = new Y.Parallel();
 
                 if ( error ) {
                     service._error("Failed to contact the REST API");
                     return;
                 }
 
-                endLoadRoot = tasks.add();
-
                 rootLocationId = response.document.Root.rootLocation._href;
-                service._loadLocationAndContent(rootLocationId, function (error, result){
-                    //FIXME
-                    console.log(result.location.get('id'));
-                    console.log(result.content.get('mainLanguageCode'));
+                service._loadLocationAndContent(rootLocationId, tasks.add(function (error, result){
+                    if ( error ) {
+                        loadError = true;
+                        return;
+                    }
                     service._rootStruct = result;
-                    endLoadRoot();
-                });
+                }));
 
-                endLoadRootMediaFolder = tasks.add();
                 rootMediaFolderId = response.document.Root.rootMediaFolder._href;
-                service._loadLocationAndContent(rootMediaFolderId, function (error, result){
-                    //FIXME
-                    console.log(result.location.get('id'));
-                    console.log(result.content.get('mainLanguageCode'));
+                service._loadLocationAndContent(rootMediaFolderId, tasks.add(function (error, result){
+                    if ( error ) {
+                        loadError = true;
+                        return;
+                    }
                     service._rootMediaStruct = result;
-                    endLoadRootMediaFolder();
-
-                });
+                }));
 
                 tasks.done(function () {
+                    if ( loadError ) {
+                        service._error("Failed to load content/location");
+                        return;
+                    }
                     next(service);
                 });
             });
         },
 
         /**
-         * Loads the parent location and its content
-         *
-         * //TODO update comment
+         * Loads the given `locationId` and its content
          *
          * @protected
-         * @method _loadParent
-         * @param {Y.eZ.Location} location
+         * @method _loadLocationAndContent
+         * @param {Integer} locationId
          * @param {Function} callback the function to call when the location and
          *        the content are loaded
-         * @param {Boolean} callback.error the error, truthy if an error occured
+         * @param {Boolean} callback.error the error, true if an error occurred
          * @param {Object} callback.result an object containing the
          *        Y.eZ.Location and the Y.eZ.Content instances under the `location` and
          *        the `content` keys.
@@ -353,9 +350,7 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
              * @readOnly
              */
             platformNavigationItems: {
-                valueFn: function () {
-                    // TODO these location ids should be taken from the REST
-                    // root ressource instead of being hardcoded
+                getter: function () {
                     return [
                         this._getSubtreeItem(
                             "Content structure",
@@ -366,8 +361,8 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                         this._getSubtreeItem(
                             "Media library",
                             "media-library",
-                            "/api/ezp/v2/content/locations/1/43",
-                            "eng-gb"
+                            this._rootMediaStruct.location.get('id'),
+                            this._rootMediaStruct.content.get('mainLanguageCode')
                         ),
                     ];
                 },
@@ -388,7 +383,7 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
              * @readOnly
              */
             studioplusNavigationItems: {
-                valueFn: function () {
+                getter: function () {
                     return [
                         this._getNavigationItem(
                             "eZ Studio Plus presentation", "studioplus-presentation",
@@ -413,7 +408,7 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
              * @readOnly
              */
             studioNavigationItems: {
-                valueFn: function () {
+                getter: function () {
                     return [
                         this._getNavigationItem(
                             "eZ Studio presentation", "studio-presentation",
@@ -438,7 +433,7 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
              * @readOnly
              */
             adminNavigationItems: {
-                valueFn: function () {
+                getter: function () {
                     return [
                         this._getParameterItem(
                             "Administration dashboard", "admin-dashboard",
