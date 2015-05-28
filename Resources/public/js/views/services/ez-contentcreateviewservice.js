@@ -82,8 +82,10 @@ YUI.add('ez-contentcreateviewservice', function (Y) {
 
             viewParent = app.routeUri(
                 'viewLocation',
-                //TODO create parent content (do it at the end)
-                {id: this.get('parentLocation').get('id'), languageCode: 'eng-GB'}
+                {
+                    id: this.get('parentLocation').get('id'),
+                    languageCode: this.get('parentLocation').get('mainLanguageCode')
+                }
             );
             this.set('discardRedirectionUrl', viewParent);
             this.set('closeRedirectionUrl', viewParent);
@@ -104,6 +106,15 @@ YUI.add('ez-contentcreateviewservice', function (Y) {
              * @required
              */
             parentLocation: {},
+
+            /**
+             * The parent location of the new content
+             *
+             * @attribute parentContent
+             * @type Y.eZ.Content
+             * @required
+             */
+            parentContent: {},
         }
     });
 });
