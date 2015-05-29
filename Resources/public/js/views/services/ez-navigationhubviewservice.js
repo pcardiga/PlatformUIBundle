@@ -23,24 +23,6 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
         initializer: function () {
             this.on('*:logOut', this._logOut);
             this.after('*:navigateTo', this._navigateTo);
-
-            /**
-             * Stores the root struct with it's `location` and `content`
-             *
-             * @property _rootStruct
-             * @type {Object}
-             * @protected
-             */
-            this._rootStruct = null;
-
-            /**
-             * Stores the root media struct with it's `location` and `content`
-             *
-             * @property _rootMediaStruct
-             * @type {Object}
-             * @protected
-             */
-            this._rootMediaStruct = null;
         },
 
         /**
@@ -92,7 +74,7 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                         loadError = true;
                         return;
                     }
-                    service._rootStruct = result;
+                    service.set('rootStruct', result);
                 }));
 
                 rootMediaFolderId = response.document.Root.rootMediaFolder._href;
@@ -101,12 +83,12 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                         loadError = true;
                         return;
                     }
-                    service._rootMediaStruct = result;
+                    service.set('rootMediaStruct', result);
                 }));
 
                 tasks.done(function () {
                     if ( loadError ) {
-                        service._error("Failed to load content/location");
+                        service._error("Failed to the load root contents and locations");
                         return;
                     }
                     next(service);
@@ -336,6 +318,30 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
         ATTRS: {
 
             /**
+             * Stores the root struct with it's `location` and `content`
+             *
+             * @attribute rootStruct
+             * @type {Object}
+             */
+            rootStruct: {
+                valueFn: function () {
+                    return {location: new Y.eZ.Location(), content: new Y.eZ.Content()};
+                },
+            },
+
+            /**
+             * Stores the root media struct with it's `location` and `content`
+             *
+             * @attribute rootMediaStruct
+             * @type {Object}
+             */
+            rootMediaStruct: {
+                valueFn: function () {
+                    return {location: new Y.eZ.Location(), content: new Y.eZ.Content()};
+                },
+            },
+
+            /**
              * Stores the navigation item objects for the 'platform' zone. Each
              * object must contain a `Constructor` property referencing
              * the constructor function to use to build the navigation item
@@ -355,14 +361,14 @@ YUI.add('ez-navigationhubviewservice', function (Y) {
                         this._getSubtreeItem(
                             "Content structure",
                             "content-structure",
-                            this._rootStruct.location.get('id'),
-                            this._rootStruct.content.get('mainLanguageCode')
+                            this.get('rootStruct').location.get('id'),
+                            this.get('rootStruct').content.get('mainLanguageCode')
                         ),
                         this._getSubtreeItem(
                             "Media library",
                             "media-library",
-                            this._rootMediaStruct.location.get('id'),
-                            this._rootMediaStruct.content.get('mainLanguageCode')
+                            this.get('rootMediaStruct').location.get('id'),
+                            this.get('rootMediaStruct').content.get('mainLanguageCode')
                         ),
                     ];
                 },

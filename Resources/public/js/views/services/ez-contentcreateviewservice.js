@@ -84,7 +84,7 @@ YUI.add('ez-contentcreateviewservice', function (Y) {
                 'viewLocation',
                 {
                     id: this.get('parentLocation').get('id'),
-                    languageCode: this.get('parentLocation').get('mainLanguageCode')
+                    languageCode: this.get('parentContent').get('mainLanguageCode')
                 }
             );
             this.set('discardRedirectionUrl', viewParent);
@@ -108,7 +108,7 @@ YUI.add('ez-contentcreateviewservice', function (Y) {
             parentLocation: {},
 
             /**
-             * The parent location of the new content
+             * The parent content of the new content
              *
              * @attribute parentContent
              * @type Y.eZ.Content

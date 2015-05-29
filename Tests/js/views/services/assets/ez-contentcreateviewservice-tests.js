@@ -39,6 +39,13 @@ YUI.add('ez-contentcreateviewservice-tests', function (Y) {
                 args: ['id'],
                 returns: this.parentLocationId,
             });
+            this.parentContent = new Mock();
+            this.parentContentMainLanguageCode = 'eng-GB';
+            Mock.expect(this.parentContent, {
+                method: 'get',
+                args: ['mainLanguageCode'],
+                returns: this.parentContentMainLanguageCode,
+            });
             Mock.expect(this.app, {
                 method: 'routeUri',
                 args: ['viewLocation', Mock.Value.Object],
